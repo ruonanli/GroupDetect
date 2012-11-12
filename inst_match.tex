@@ -1,44 +1,27 @@
 \subsection{Instantaneous Optimal Matching}
 \label{agg}
 
-We are now in a position to discuss the first step in our framework, which serves dissimilarity $\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W^{*})$ to the third step, and the score $D(\mathcal{Q}_{t}, \mathcal{D}_{s})$ as well as instantaneous optimal matching $W^{t,s}$ to the second step. With the instantaneous ensembles $\mathcal{Q}_{t}=\{\mathbf{f}_{m,t},\mathbf{g}_{m,m',t}\}$ and $\mathcal{D}_{s}=\{\mathbf{f}^{D}_{n,s},\mathbf{g}^{D}_{n,n',s}\}$, we seek to compute a dissimilarity between them. While the distance between two point ensembles can be computed using standard methods such as Hausdorff distance, dissimilarity between our descriptor ensembles must account for the facts that the ensembles contain structural information between individuals (contextual descriptors), and are `noisy' in the sense of including non-participant tracks and false targets. Moreover, the $M$ input targets can only be partially matched with the $N$ exemplar targets. 
-
-While we will not define them until Section \ref{MetLearn}, suppose for now that there exists an `atomic' distance function $d_{I}(\mathbf{f}_{m,t}, \mathbf{f}^{D}_{n,s}) $ for comparing two individual descriptors $\mathbf{f}_{m,t}$ and $\mathbf{f}^{D}_{n,s}$, as well as another atomic function $d_{P}(\mathbf{g}_{m,m',t}, \mathbf{g}^{D}_{n,n',s}) $ for comparing two contextual descriptors $\mathbf{g}_{m,m',t}$ and $\mathbf{g}^{D}_{n,n',s}$. What we require to compute is an overall dissimilarity $\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W^{*})$ or $D(\mathcal{Q}_{t}, \mathcal{D}_{s})$ aggregated from the atomic distances. Recall that the  matching matrix $W\in\mathcal{W}$ encodes which of the input targets is mapped to each of the exemplar agents, and therefore it provides a natural aggregation mechanism as 
+We now discuss the first step, which serves dissimilarity $\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W^{*})$ to the third step, and the score $D(\mathcal{Q}_{t}, \mathcal{D}_{s})$ as well as instantaneous optimal matching $W^{t,s}$ to the second step. Essentially, we seek to compute a dissimilarity between the instantaneous ensembles $\mathcal{Q}_{t}=\{\mathbf{f}_{m,t},\mathbf{g}_{m,m',t}\}$ and $\mathcal{D}_{s}=\{\mathbf{f}^{D}_{n,s},\mathbf{g}^{D}_{n,n',s}\}$. While we will not define them until Section \ref{MetLearn}, suppose for now that there exists an `atomic' distance function $d_{I}(\mathbf{f}_{m,t}, \mathbf{f}^{D}_{n,s}) $ for comparing two individual descriptors $\mathbf{f}_{m,t}$ and $\mathbf{f}^{D}_{n,s}$, as well as another atomic function $d_{P}(\mathbf{g}_{m,m',t}, \mathbf{g}^{D}_{n,n',s}) $ for comparing two contextual descriptors $\mathbf{g}_{m,m',t}$ and $\mathbf{g}^{D}_{n,n',s}$. We aggregate the overall dissimilarity $\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W^{*})$ or $D(\mathcal{Q}_{t}, \mathcal{D}_{s})$ from the atomic distances. Recall that the matching matrix $W\in\mathcal{W}$ encodes which of the input targets is mapped to each of the exemplar agents, and therefore it provides a natural aggregation mechanism as 
 \begin{equation}
 \begin{split}
 &\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W)=\\
 &\sum_{nm}w_{nm}d_{I}(\mathbf{f}_{m}, \mathbf{f}^{D}_{n})+\sum_{nmn'm'}w_{nm}w_{n'm'}d_{P}(\mathbf{g}_{m,m',s}, \mathbf{g}^{D}_{n,n',t}),
 \end{split}
 \end{equation}
-in which the dissimilarity of the two ensembles under a particular matching $W$ is computed by adding all atomic distances between associated pairs.
+in which the dissimilarity between two ensembles under a particular matching $W$ is added from all atomic distances between associated pairs.
 
-Consequently, the score $D(\mathcal{Q}_{t}, \mathcal{D}_{s})$ becomes naturally the one from the optimal matching, \textit{i.e.}, the minimum overall dissimilarities $\hat{D}$'s over all possible matching matrices: $D(\mathcal{Q}_{t}, \mathcal{D}_{s})=\min_{W}\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W)$. At the same time, $W^{t,s}=\arg\min_{W}\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W)$ essentially identifies the participants among the input targets which share the maximum similarity with the database exemplar. 
- 
- In sum, we compute the group dissimilarity $D(\mathcal{Q}_{t}, \mathcal{D}_{s})$ by solving the optimization problem
+Consequently, the score $D(\mathcal{Q}_{t}, \mathcal{D}_{s})$ becomes naturally the one from the optimal matching, \textit{i.e.}, the minimum overall dissimilarities $\hat{D}$'s over all possible matching matrices: $D(\mathcal{Q}_{t}, \mathcal{D}_{s})=\min_{W\in\mathcal{W}}\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W)$. At the same time, $W^{t,s}=\arg\min_{W\in\mathcal{W}}\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W)$ essentially identifies the participants among the input targets which share the maximum similarity with the database exemplar.  Let $\mathbf{w}$ be a long vector by stacking the columns of $W^{t,s}$, the optimization problem can be expressed as
 \begin{equation}
 \label{Prob1}
-\min_{W}\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W), \textup{s.t.} W\in\mathcal{W}.
+\min_{w_{nm}\in\{0,1\}}\mathbf{c}^{T}\mathbf{w}+\mathbf{w}^{T}H\mathbf{w},\textup{s.t.} W\mathbf{1}=\mathbf{1}, \mathbf{1}^{T}W\leq\mathbf{1}^{T},
 \end{equation}
-Let $\mathbf{w}$ be a long vector by stacking the columns of $W^{t,s}$, the objective in (\ref{Prob1}) can be also expressed as $\min_{\mathbf{w}}\mathbf{c}^{T}\mathbf{w}+\mathbf{w}^{T}H\mathbf{w}$, in which $\mathbf{c}$ is a $MN\times 1$ vector whose elements come from corresponding individual descriptors $d_{I}(\mathbf{f}_{m,t}, \mathbf{f}^{D}_{n,s})$'s, and $H$ is a $MN\times MN$ matrix whose elements are the corresponding contextual descriptors $d_{P}(\mathbf{g}_{m,m',t}, \mathbf{g}^{D}_{n,n',s})$'s. Though this optimization problem has integer constraints and is generally not convex or concave as $H$ is generally not positive or negative definite, a continuous quadratic concave programming without integer constraints can be proved to be equivalent to (\ref{Prob1}) and thus (\ref{Prob1}) can be efficiently solved. We introduce and justify the equivalent optimization in \ref{proof} and solve it using the CVX toolbox \cite{cvx}.
-
-\subsubsection{Equivalent Optimization for Problem (\ref{Prob1})}
-\label{proof}
-
-We rewrite (\ref{Prob1}) as
-\begin{equation}
-\begin{split}
-&\min_{\mathbf{w}}\mathbf{c}^{T}\mathbf{w}+\mathbf{w}^{T}H\mathbf{w}\\
-&\textup{s.t.} W\in\{0,1\}^{N\times M}, W\mathbf{1}=\mathbf{1}, \mathbf{1}^{T}W\leq\mathbf{1}^{T}.
-\end{split}
-\end{equation}
-Instead of directly tackling it, we solve the following optimization.
+where $\mathbf{c}$ is a $MN\times 1$ vector whose elements come from corresponding individual descriptors $d_{I}(\mathbf{f}_{m,t}, \mathbf{f}^{D}_{n,s})$'s, and $H$ is a $MN\times MN$ matrix whose elements are the corresponding contextual descriptors $d_{P}(\mathbf{g}_{m,m',t}, \mathbf{g}^{D}_{n,n',s})$'s. As this optimization problem has integer constraints and is generally not convex or concave, we alternatively solve
 \begin{equation}
 \label{Prob2}
-\begin{split}
-&\min_{\mathbf{w}}\mathbf{c}^{T}\mathbf{w}+\mathbf{w}^{T}H\mathbf{w}+\hat{\mathbf{c}}^{T}\mathbf{w}+\mathbf{w}^{T}\hat{H}\mathbf{w}\\
-&\textup{s.t.}  W \in[0,1]^{N\times M}, W\mathbf{1}=\mathbf{1}, \mathbf{1}^{T}W\leq\mathbf{1}^{T},
-\end{split}
+\min_{w_{nm}\in[0,1]}(\mathbf{c}+\hat{\mathbf{c}})^{T}\mathbf{w}+\mathbf{w}^{T}(H+\hat{H})\mathbf{w}, \textup{s.t.} W\mathbf{1}=\mathbf{1}, \mathbf{1}^{T}W\leq\mathbf{1}^{T},
 \end{equation}
 where $\hat{\mathbf{c}}=[\sigma_{1},\sigma_{2},\cdots,\sigma_{MN}]^{T}$, $\hat{H}=diag\{-\sigma_{1},-\sigma_{2},\cdots,-\sigma_{MN}\}$, and $\sigma_{i}$ is a sufficiently large number satisfying $\sigma_{i}>\sum^{MN}_{j=1,j\neq i}|H_{ij}|+H_{ii}$.
 
-Note that $\hat{H}$ defined in this way imposes a negative strictly dominant diagonal to $H$ and the quadratic term $\hat{H}+H$ is strictly negative definite. Therefore, (\ref{Prob2}) is a concave programming in the convex unit hypercube $[0,1]^{N\times M}$ and will achieve its minimum at one of the feasible vertices. The feasible vertices, meanwhile, are exactly the feasible solutions of (\ref{Prob1}), and at these vertices, the values of the objective of (\ref{Prob2}) are equal to those of (\ref{Prob1}) due to the cancellation brought by $\hat{\mathbf{c}}$. It is therefore implied that by solving the much more efficient Problem (\ref{Prob2}) we obtain the exact solution for the original Problem (\ref{Prob1}).
+Note that $\hat{H}$ imposes a negative strictly dominant diagonal to $H$ and the quadratic term $\hat{H}+H$ is strictly negative definite. Therefore, (\ref{Prob2}) is a concave programming in the convex unit hypercube $[0,1]^{N\times M}$ and will achieve its minimum at one of the feasible vertices. The feasible vertices, meanwhile, are exactly the feasible solutions of (\ref{Prob1}), and at these vertices, the values of the objective of (\ref{Prob2}) are equal to those of (\ref{Prob1}) due to the cancellation brought by $\hat{\mathbf{c}}$. It is therefore implied that by solving the much more efficient Problem (\ref{Prob2}) we obtain the exact solution for the original Problem (\ref{Prob1}). We solve (\ref{Prob2}) using the CVX toolbox \cite{cvx}.
+
+
