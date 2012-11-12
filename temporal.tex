@@ -1,0 +1,69 @@
+\subsection{Branch-and-Bound Temporal Localization}
+\label{BB}
+
+
+Once the participants are determined through the best matching $W^{*}$, we recompute the dissimilarities under this specific matching $\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W^{*})$ for all $(t,s)$ pairs (See \ref{agg}), and select $D^{*}(t)=\min_{s}\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W^{*})$ as well as $s^{*}(t)=\arg\min_{s}\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W^{*})$. Essentially, $\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W^{*})$ tells how similar the activity of the individuals selected by $W^{*}$ at time $t$ is to the exemplar activity at time $s$, $D^{*}(t)$ characterizes the minimal dissimilarity of the input activity by the selected participants to the entire exemplar, and $s^{*}(t)$ indicates the time in the exemplar at which the input at time $t$ exhibits this maximum similarity.  Suppose that in the input between starting time $t_{s}$ and ending time $t_{e}$ ($1\leq t_{s}<t_{e}\leq T$) the selected group of people perform exactly the same activity as the exemplar (between time $1$ and $S$), then ideally not only the dissimilarities $D^{*}(t)$'s should be small for $t_{s}\le t\le t_{e}$ and be large for other $t$'s, but also the optimally aligned time $s^{*}(t)$ should reside at a similar relative temporal location between $1$ and $S$ as the input time $t$ resides between $t_{s}$ and $t_{e}$.
+
+This observation motivates a design of efficient temporal localization. On the one hand, through the effort to be introduced in Section \ref{MetLearn}, the dissimilarities $D^{*}(t)$ are driven toward zero in the `ground-truth' interval $[t_{s}, t_{e}]$ , and toward a large positive number $2\Delta$ otherwise. On the other hand, we employ a temporal pyramid with a total of $L$ levels and $2^{l}$ equal-length cells at the $l$th level to encode the temporal location of a particular time during a period. Specifically, we define $t\in\mathcal{C}(T_{s},T_{e}, l,i)$ to mean that time $t$ belongs to the $i$th cell at the $l$th level of a $L$-level temporal pyramid on the interval $[T_{s},T_{e}]$, and $s\in\mathcal{C}(1,S, l,i)$ to mean that time $s$ belongs to the $i$th cell at the $l$th level of the pyramid on the interval $[1,S]$. As a result, the quantity
+\begin{equation}
+k(t, T_{s},T_{e}, s, 1,S)\triangleq\sum^{L-1}_{l=0}\sum^{2^{l}}_{i=1} \mathbf{1}(t\in\mathcal{C}(T_{s},T_{e}, l,i))\mathbf{1}(s\in\mathcal{C}(1,S, l,i))
+\end{equation}
+achieves the maximum if and only if $s$ resides at the same relative temporal location between $1$ and $S$ as $t$ resides between $T_{s}$ and $T_{e}$.
+
+Taking both considerations above into account, apparently the function
+\begin{equation}
+\label{quality}
+f(T_{s}, T_{e})\triangleq\sum^{T_{e}}_{t=T_{s}}k(t, T_{s},T_{e}, s^{*}(t), 1,S)(D^{*}(t)-\Delta)
+\end{equation}
+achieves the global minimum if and only if the interval $[T_{s}, T_{e}]$ is exactly aligned to the desirable interval $[t_{s}, t_{e}]$. (Note that in this case all terms $k(t, T_{s},T_{e}, s^{*}(t), 1,S)$ achieves the maximum positive number, and all terms $(D^{*}(t)-\Delta)$ are approximately equal to $-\Delta$.)
+
+
+It is straightforward to verify that the above designed function $f$ has satisfied the requirement for the `quality function' studied in \cite{Lampert}, which enables the efficient branch-and-bound search to obtain the optimal solutions for $T_{s}$ and $T_{e}$, instead of a sliding window at multiple scale as adopted by the majority of existing work. To apply branch-and-bound algorithm to minimize \ref{quality}, we first specify the spaces where $T_{s}$ and $T_{e}$ may take a value. We denote the length of the shortest exemplar activity as $T_{min}$, then we assume $1\leq T_{s}\leq T-T_{min}+1$ and $T_{min}+1\leq T_{e}\leq T$. Additional constraint may be imposed, such as $T_{min}\leq T_{e}-T_{s}$. Given these information,  the temporal branch-and-bound algorithm, as a companion to the 2-D case studied in \cite{Lampert}, can be derived as in Algorithm \ref{Algo:2}.  In this algorithm, $\hat{f}(T_{s,low}, T_{s,upp}, T_{e,low}, T_{e,upp})$ is a lower bound of the values of the quality function evaluated on all intervals enclosed in $[T_{s,low}, T_{s,upp}]\times [T_{e,low}, T_{e,upp}]$. To calculate this lower bound, we define
+\begin{equation}
+\begin{split}
+&\hat{f}(T_{s,low}, T_{s,upp}, T_{e,low}, T_{e,upp})\\
+&=\sum^{L-1}_{l=0}\sum^{2^{l}}_{i=1} \hat{f}(T^{l,i}_{s,low}, T^{l,i}_{s,upp}, T^{l,i}_{e,low}, T^{l,i}_{e,upp})
+\end{split}
+\end{equation}
+where $T^{i,l}_{s}, T^{i,l}_{e}$ are the boundaries of cell $\mathcal{C}(T_{s},T_{e}, l,i)$. In other words, we use the summation of the lower bounds of all cells in the pyramid as the lower bound of the entire interval. The evaluation of $\hat{f}(T^{l,i}_{s,low}, T^{l,i}_{s,upp}, T^{l,i}_{e,low}, T^{l,i}_{e,upp})$, however, is a $\mathcal{O}(1)$ operation with the help of integral dissimilarities $I(t)$ of those negative group dissimilarities $D^{*}(t)$ over $t$. Specifically, let
+\begin{equation}
+I(t)=\sum^{t}_{t'=1} \min(0,D^{*}(t))
+\end{equation}
+which only needs to be computed once. Then the lower bound for the cell $\mathcal{C}(T_{s},T_{e}, l,i)$ can be obtained as
+\begin{equation}
+\hat{f}(T^{l,i}_{s,low}, T^{l,i}_{s,upp}, T^{l,i}_{e,low}, T^{l,i}_{e,upp})=I(T^{l,i}_{e,upp})-I(T^{l,i}_{s,low}).
+\end{equation}
+
+
+\begin{algorithm*}[t]
+\begin{enumerate}
+\footnotesize{
+\item Initialize: Let $T_{s,low}=1$, $T_{s,upp}=T-T_{min}+1$, $T_{e,low}=T_{min}+1$, and $T_{e,upp}=T$; Initialize priority queue $Q$ as empty; 
+\item Do
+\begin{itemize}
+\item If $T_{s,upp}-T_{s,low} \ge T_{e,upp}-T_{e,low}$\\
+$T^{(1)}_{s,low}\leftarrow T_{s,low}$, $T^{(1)}_{s,upp}\leftarrow T_{s,low}+\frac{T_{s,upp}-T_{s,low}}{2}$,
+$ T^{(1)}_{e,low}\leftarrow T_{e,low}$, $T^{(1)}_{e,upp}\leftarrow T_{e,upp}$,
+$T^{(2)}_{s,low}\leftarrow T_{s,low}+\frac{T_{s,upp}-T_{s,low}}{2}$, $T^{(2)}_{s,upp}\leftarrow T_{s,upp}$,
+$ T^{(2)}_{e,low}\leftarrow T_{e,low}$, $T^{(2)}_{e,upp}\leftarrow T_{e,upp}$;\\
+else \\
+$T^{(1)}_{s,low}\leftarrow T_{s,low}$, $T^{(1)}_{s,upp}\leftarrow T_{s,upp}$,
+$ T^{(1)}_{e,low}\leftarrow T_{e,low}$, $T^{(1)}_{e,upp}\leftarrow T_{e,low}+\frac{T_{e,upp}-T_{e,low}}{2}$,
+$T^{(2)}_{s,low}\leftarrow T_{s,low}$, $T^{(2)}_{s,upp}\leftarrow T_{s,upp}$,
+$ T^{(2)}_{e,low}\leftarrow T_{e,low}+\frac{T_{e,upp}-T_{e,low}}{2}$, $T^{(2)}_{e,upp}\leftarrow T_{e,upp}$;
+\item If $T_{min}\leq T^{(1)}_{e,upp}-T^{(1)}_{s,low}$,
+push $(T^{(1)}_{s,low}, T^{(1)}_{s,upp}, T^{(1)}_{e,low}, T^{(1)}_{e,upp},\hat{f}(T^{(1)}_{s,low}, T^{(1)}_{s,upp}, T^{(1)}_{e,low}, T^{(1)}_{e,upp}))$ into $Q$;\\
+\item If $T_{min}\leq T^{(2)}_{e,upp}-T^{(2)}_{s,low}$,
+push $(T^{(2)}_{s,low}, T^{(2)}_{s,upp}, T^{(2)}_{e,low}, T^{(2)}_{e,upp},\hat{f}(T^{(2)}_{s,low}, T^{(2)}_{s,upp}, T^{(2)}_{e,low}, T^{(2)}_{e,upp}))$ into $Q$;\\
+\item Let $(T_{s,low}, T_{s,upp}, T_{e,low}, T_{e,upp})$ be the tuple in $Q$ achieving the minimal $\hat{f}$;
+\end{itemize}
+Until $T_{s,low}=T_{s,upp}, T_{e,low}=T_{e,upp}$.
+\item Output: $T_{s}\leftarrow T_{s,low}, T_{e}\leftarrow T_{e,low}$. 
+}
+\end{enumerate}
+\caption{\small Branch-and-bound search for temporal localization.}
+\label{Algo:2}
+\end{algorithm*}
+
+The procedure described in Sections \ref{vote} and \ref{BB} is repeated multiple times for each input video and each exemplar. After we find a best solution of $(W^{*}, T_{s}, T_{e})$, we can remove the corresponding tracks in the corresponding interval before we re-execute the same procedure for the second-best solution, and so on. In this way, we obtain multiple responses in the input for each exemplar, and  the input is also matched against multiple database exemplars. In the end, we have for the input video a pool of space-time localizations, with each of these `detected social interactions' associated through similarity scores to one or several exemplars. To classify a a detected social interaction into a category, we simply apply majority voting using the category labels of the highly-ranked exemplars associated with that social interaction.
+
