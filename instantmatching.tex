@@ -1,0 +1,45 @@
+% !TEX root =  GroupDet.tex
+\section{Representation and instantaneous matching}
+
+We consider a video as a sequence of $T$ temporal units that occur at a frequency equal to or less than the framerate of the raw video data. The duration of these $T$ units is typically between one and a  few raw video frames, and it is determined by one's application-appropriate choice for temporal resolution of computing atomic action descriptors (e.g., positions, velocities, accelerations, histograms of flow, space-time SIFT). We assume the existence of an application-specific detection and tracking system that outputs $M$ space-time tracks, which can be time-varying points, bounding boxes, silhouettes, or something else. Due to actor entry and exit, occlusions, and other tracking errors, not all $M$ tracks will persist over all $T$ frames, and some of the $M$ tracks may correspond to short-lived false detections.  The value of $M$ is thus the total number of trajectory fragments that are identified with distinct actors.
+
+With all tracks $m\in M$ of the input video we associate ensembles of two types of descriptors. There are $TM$ per-time-unit $d_{I}$-dimensional descriptors $\{\mathbf{f}_{m,t}\}$ that encode the $m$th actor's activity at time unit $t\in T$; and $TM(M-1)$ pairwise $d_{P}$-dimensional descriptors $\{\mathbf{g}$ that encode at time $t$ the motion and/or appearance of actor $m$ relative to all other actors $m'\in M, m'\ne m$. Loosely speaking, $\mathbf{g}_{m,m',t}$ captures the ``influence'' that actor $m'$ has over actor $m$ at time $t$. This influence is not symmetric in general, so typically $\mathbf{g}_{m,m',t}\ne \mathbf{g}_{m',m,t}$.  We use the notation $\mathcal{Q}_{t}\triangleq\{\mathbf{f}_{m,t},\mathbf{g}_{m,m',t}\}$ for the ensembles of all $M$ tracks at time $t$, and $\mathcal{Q}\triangleq\{\mathcal{Q}_{t}\}_{1\leq t\leq T}$ for the ensembles harvested from the entire input video. As mentioned above, the dimensions and entries in the descriptor vectors $\mathbf{f}$, $\mathbf{g}$ will be application dependent, and we consider a variety of examples in our experiments.
+
+Each exemplar video is processed in the very same way as the input video, so that an exemplar of $N\le M$ participants over $S$ time units (which differ from raw video frames by the same constant factor as the input) is represented at each time $s\in S$ by the ensemble $\mathcal{D}_{s}\triangleq\{\mathbf{f}^{D}_{n,s},\mathbf{g}^{D}_{n,n',s}\}_{n,n'\in N, n\neq n', s\in S}$. We use the analogous notation $\mathcal{D}\triangleq\{\mathcal{D}_{s}\}_{1\leq s\leq S}$ for the ensembles collected from the entire exemplar. 
+
+\subsection{Matching at each unit of time}
+The first step in our pipeline is to separately compute the correspondence between the $N$ exemplar actors at each time $s\in S$ and the optimal subset $N\le M$ of input actors at each time $t\in T$. We represent the correspondence for each pair of input and exemplar times $t,s$ by the $N\times M$ binary matrix $W^{t,s}$, where the $nm$th entry $w_{nm}$ is one only when the $n$th exemplar actor is matched to the $m$th input actor.\footnote{Missing input tracks at time $t$ are handled by setting the values of the missing descriptors to be sufficiently large (or small) so as not to be matched with any actors in the exemplar.} Matches must be unique, so these matrices can have at most one non-zero entry in each row or column: $W\mathbf{1}=\mathbf{1}$ and $\mathbf{1}^{T}W\leq\mathbf{1}^{T}$. We use the symbol $\mathcal{W}$ to represent the space of all $N\times M$ matrices that satisfy these criteria, \ie, $\mathcal{W}\triangleq\{W\in\{0,1\}^{N\times M}| W\mathbf{1}=\mathbf{1}, \mathbf{1}^{T}W\leq\mathbf{1}^{T}\}$.
+
+The quality of a correspondence is measured by the similarity between the individual and pairwise descriptors of the $N$ selected input actors and those of the $N$ exemplars. We formalize this by defining 
+\begin{equation*}
+\begin{split}
+&\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W)=\\
+&\sum_{nm}w_{nm}d_{I}(\mathbf{f}_{m}, \mathbf{f}^{D}_{n})+\!\!\!\!\!\!\sum_{nmn'm'}\!\!\!\!\!w_{nm}w_{n'm'}d_{P}(\mathbf{g}_{m,m',s}, \mathbf{g}^{D}_{n,n',t}),
+\end{split}
+\end{equation*}
+to be the dissimilarity between two instantaneous ensembles under a particular matching matrix $W$. We use  Mahalonobis distances to compare descriptors in this expression, so that $d_{I}(\mathbf{f}, \mathbf{f}')=(\mathbf{f}-\mathbf{f}')^{T}\Sigma_{I}(\mathbf{f}-\mathbf{f}')$ and $d_{P}(\mathbf{g}, \mathbf{g}')=(\mathbf{g}-\mathbf{g}')^{T}\Sigma_{P}(\mathbf{g}-\mathbf{g}')$, with $\Sigma_{I}\succeq 0$ and $\Sigma_{P}\succeq 0$ positive semi-definite matrices learned from exemplar videos as will be described in Section~\ref{sec:metric learning}.
+
+Our immediate objective is to find the matching matrix $W\in\mathcal{W}$ that minimizes the score $\hat{D}(\mathcal{Q}_{t}, \mathcal{D}_{s}, W)$. Letting $\mathbf{w}$ be the vector formed by stacking the columns of $W$, the optimization can be expressed as
+\begin{equation*}
+\label{Prob1}
+\min_{w_{nm}\in\{0,1\}}\mathbf{c}^{T}\mathbf{w}+\mathbf{w}^{T}H\mathbf{w},\ \ \textup{s.t.}\ W\mathbf{1}=\mathbf{1}, \mathbf{1}^{T}W\leq\mathbf{1}^{T},
+\end{equation*}
+where $\mathbf{c}$ is a $MN\times 1$ vector of distances between individual descriptors, $d_{I}(\mathbf{f}_{m,t}, \mathbf{f}^{D}_{n,s})$, and $H$ is a $MN\times MN$ matrix of distances between pairwise descriptors $d_{P}(\mathbf{g}_{m,m',t}, \mathbf{g}^{D}_{n,n',s})$'s. This problem has integer constraints and is generally not convex, so we instead solve
+\begin{equation}
+\label{Prob2}
+\min_{w_{nm}\in[0,1]}(\mathbf{c}+\hat{\mathbf{c}})^{T}\mathbf{w}+\mathbf{w}^{T}(H+\hat{H})\mathbf{w}, \textup{s.t.} W\mathbf{1}=\mathbf{1}, \mathbf{1}^{T}W\leq\mathbf{1}^{T},
+\end{equation}
+where $\hat{\mathbf{c}}=[\sigma_{1},\sigma_{2},\cdots,\sigma_{MN}]^{T}$, $\hat{H}=\text{diag}\{-\sigma_{1},-\sigma_{2},\cdots,-\sigma_{MN}\}$, and $\sigma_{i}$ is a sufficiently large number satisfying $\sigma_{i}>\sum^{MN}_{j=1,j\neq i}|H_{ij}|+H_{ii}$. \todd{Where is $\sigma_i$ in this expression?}
+
+Note that $\hat{H}$ imposes a negative strictly dominant diagonal to $H$ and the quadratic term $\hat{H}+H$ is strictly negative definite. Therefore, (\ref{Prob2}) is a concave programming in the convex unit hypercube $[0,1]^{N\times M}$ and will achieve its minimum at one of the feasible vertices. The feasible vertices, meanwhile, are exactly the feasible solutions of (\ref{Prob1}), and at these vertices, the values of the objective of (\ref{Prob2}) are equal to those of (\ref{Prob1}) due to the cancellation brought by $\hat{\mathbf{c}}$. It is therefore implied that by solving the much more efficient Problem (\ref{Prob2}) we obtain the exact solution for the original Problem (\ref{Prob1}). We solve (\ref{Prob2}) using the CVX toolbox \cite{cvx}.
+
+\subsection{Descriptor Metric Learning}
+We learn each pair of Mahalanobis metrics $(\Sigma_{I}, \Sigma_{P})$ for each number of participants separately. To do so, we construct two different types of collections from our database exemplars. The first collection, $\mathcal{P}$, contains all pairs of instantaneous interaction ensembles that are similar to each other. The second collection, $\mathcal{M}$, is comprised of all ordered triples $(h,k,l)$ in which ensemble $h$ is similar to ensemble $k$ but they two  are dissimilar to ensemble $l$. In the present case, we build the collection $\mathcal{P}$ and the ($(h,k)$-indexed) similar pairs in collection $\mathcal{M}$ using all instantaneous ensemble pairs with their ground-truth matching matrices from the same category extracted from the same cell at the lowest level of the pyramid. Similarly, we include in the ($(h,l)$-indexed and $(k,l)$-indexed) dissimilar pairs of collection $\mathcal{M}$ the ensembles extracted from: 1) different-category exemplars; 2) same-category same-cell ensembles with simulated wrong matching matrices; and 3) ensembles within interaction intervals against ensembles from `background' non-interaction intervals. Eventually, we find the Mahalanobis metrics by solving
+\begin{equation}
+\label{classify}
+\begin{split}
+&\min_{\xi_{h,k,l}\ge0, \Sigma_{I}\succeq 0, \Sigma_{P}\succeq 0} \sum_{(u,v)\in\mathcal{P}}\hat{D}(\mathcal{D}_{u}, \mathcal{D}_{v}, W_{u,v})+\gamma\sum_{(h,k,l)\in\mathcal{M}}\xi_{h,k,l}\\
+&\textup{s.t.}  \hat{D}(\mathcal{D}_{h}, \mathcal{D}_{l}, W_{h,l})-\hat{D}(\mathcal{D}_{h}, \mathcal{D}_{k}, W_{h,k})\ge 2\Delta-\xi_{h,k,l}.
+\end{split}
+\end{equation}
+Note that $\Delta$ is the large positive number as used in (\ref{quality}), and (\ref{classify}) will encourage a similar pair to contribute a negative summand around $-\Delta$ to (\ref{quality}), and encourage a dissimilar pair to contribute approximately $+\Delta$ summand,  thus enabling the branch-and-bound search as introduced in Section \ref{BB}.  The minimization over either $\Sigma_{I}$ or $\Sigma_{P}$ falls into the framework of large margin nearest neighbor (LMNN) formulation \cite{Weinberger:ML}, and we simply decompose (\ref{classify}) into independent LMNN tasks and employ \cite{Weinberger:ML}.
