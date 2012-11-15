@@ -1,10 +1,10 @@
 % !TEX root =  GroupDet.tex
 
-\todd{Add to the beginning of Section 4, ``In all cases we use four-level temporal pyramids for the interactions, and we set the time unit to be half the duration of the cells in the lowest level.'' Then remove these words from elsewhere in the section.} 
 
-\vspace{0.05in}\noindent\noindent\textbf{UT-Interaction Dataset.} For comparison to the state-of-art, we evaluate our approach on the UT-Interaction dataset~\cite{Ryoo:group}. We follow the protocol defined in previous work~\cite{Ryoo:group,Amer:group}: 20\% of available interaction annotations are used as exemplars for training, and the remaining (non-annotated) sequences are used for testing. We again use a 4-level temporal pyramid and set a temporal unit to half length of the bottom-level cell. For individual descriptors we use 32-dimensional histogram of space-time features~\cite{Dollar:STIP}, and for pairwise descriptors we use 32-dimensional differences of optical flow histograms to encode relative motion (more details in supplemental material). To obtain agent tracks in input sequences we use a per-frame detector~\cite{Pedro:detect} with a simple between-frame association rule.
+\vspace{0.05in}\noindent\noindent\textbf{UT-Interaction Dataset.} For comparison to the state-of-art, we evaluate our approach on the UT-Interaction dataset~\cite{Ryoo:group}. We follow the protocol defined in previous work~\cite{Ryoo:group,Amer:group}: 20\% of available interaction annotations are used as exemplars for training, and the remaining (non-annotated) sequences are used for testing. For individual descriptors we use 32-dimensional histogram of space-time features~\cite{Dollar:STIP}, and for pairwise descriptors we use 32-dimensional differences of optical flow histograms to encode relative motion (more details in supplemental material). To obtain agent tracks in input sequences we use a per-frame detector~\cite{Pedro:detect} with a simple between-frame association rule.
 
 \begin{table}[ht]
+\vspace{-5pt}
 \centering \caption{Classification accuracies and false positive (FP) rates for the proposed method and the baselines on UT-Interaction dataset.}
 \footnotesize{
 \begin{tabular}{|c||c|c|}
@@ -20,12 +20,14 @@
 \end{tabular}
 }
 \label{UTaccuFP}
+\vspace{-5pt}
 \end{table}
 
-Table~\ref{UTaccuFP} compares recognition accuracy and false-alarm rates to those of previous work~\cite{Ryoo:group,Amer:group}. For our system, we consider one database exemplar at a time, compute its maximal response over the input video, and claim a true positive only when both the class-label and the identified participants are simultaneously correct. Otherwise a false positive is indicated for that exemplar class. By these measures, our approach provides improved accuracy and competitive false positive rates. Next we study detection in terms both temporal localization and participant identification. For temporal localization, we follow the protocol of~\cite{Amer:group} by indicating a true-positive when there is correct classification and more than a $50\%$ ratio between the intersection and union of the estimated temporal interval and the ground-truth. We achieve a slightly smaller area under ROC curve than the two baselines, as shown in Table ~\ref{UTarea}, but point out that differences are hard to interpret because the temporal boundaries are somewhat ambiguous for the consecutively-executed interactions in the dataset. To assess participant identification, we enforce a stricter true-positive criterion that requires $100\%$ correct identification instead of the $50\%$ value used in~\cite{Amer:group} and our system still outperforms the method of \cite{Amer:group}. We attribute this to the relative flexibility of our represention. \todd{Write one or two sentences here. Something about the fact that their interactions can't easily accommodate changes ``shape'' over space and time.}
+Table~\ref{UTaccuFP} compares recognition accuracy and false-alarm rates to those of previous work~\cite{Ryoo:group,Amer:group}. For our system, we consider one database exemplar at a time, compute its maximal response over the input video, and claim a true positive only when both the class-label and the identified participants are simultaneously correct. Otherwise a false positive is indicated for that exemplar class. By these measures, our approach provides improved accuracy and competitive false positive rates. Next we study detection in terms both temporal localization and participant identification. For temporal localization, we follow the protocol of~\cite{Amer:group} by indicating a true-positive when there is correct classification and more than a $50\%$ ratio between the intersection and union of the estimated temporal interval and the ground-truth. We achieve a slightly smaller area under ROC curve than the two baselines, as shown in Table ~\ref{UTarea}, but point out that differences are hard to interpret because the temporal boundaries are somewhat ambiguous for the consecutively-executed interactions in the dataset. To assess participant identification, we enforce a stricter true-positive criterion that requires $100\%$ correct identification instead of the $50\%$ value used in~\cite{Amer:group} and our system still outperforms the method of \cite{Amer:group}. We attribute this to the fact that we explicitly discriminate interactions and participants in the form of tracks of bounding boxes, while \cite{Amer:group} does not do so but simply explains an input using a non-discriminative generative model.
 
 \begin{table}[ht]
-\centering \caption{Area under ROC curve for the proposed method and the baselines on UT-Interaction dataset. \todd{If you are stuck for space, you could move this figure, along with the accompanying text above, to the supplemental material.}}
+\vspace{-5pt}
+\centering \caption{Area under ROC curve for the proposed method and the baselines on UT-Interaction dataset.}
 \footnotesize{
 \begin{tabular}{|c|c|c|c|}
 \hline   & \cite{Ryoo:group} &  \cite{Amer:group}  &   ours \\
@@ -35,6 +37,7 @@ Table~\ref{UTaccuFP} compares recognition accuracy and false-alarm rates to thos
 \end{tabular}
 }
 \label{UTarea}
+\vspace{-5pt}
 \end{table}
 
 Additional results that measure the effect of turning off different parts of our system can be found in the supplemental material.
@@ -44,18 +47,20 @@ Additional results that measure the effect of turning off different parts of our
 To classify an temporal interval in a test video that is successfully matched to one or more exemplars, we simply read the label of the top-scoring exemplar. Table \ref{CRIMAccu} shows the results using the error metric (frame-wise accuracy) defined in \cite{CRIM13}. As done in the original work, we separately measure performance using trajectories features only, STIP features only, and both. It is clear that motion trajectory information is much more important than local STIP-based features, which is not surprising given the limited articulation of the agents.
 
 \begin{table}[h]
-\centering \caption{Accuracies for the proposed method and the baselines on Caltech Resident-Intruder Mouse Dataset. (\%) \todd{Only show the Trajectory\_2 results in this table, and do not include the discussion about different ways to use trajectory features. Instead put this bigger table in the supplemental material along with that discussion.}}
+\vspace{-5pt}
+\centering \caption{Accuracies for the proposed method and the baselines on Caltech Resident-Intruder Mouse Dataset. (See additional results in the supplementary material.))}
 \footnotesize{
-\begin{tabular}{|c||c|c|c|c|}
-\hline   & Trajectory\_1  & Trajectory\_2 & STIP & Both \\
-\hline \cite{CRIM13} w/o. context & 52.3  & 52.3 & 29.3 & 53.1\\
-\hline \cite{CRIM13} w. context &  \underline{58.3} & 58.3 & \underline{43.0} & 61.2\\
-\hline Ours w/o. ML &  45.6 & 49.4 & 18.8 & 50.9 \\
-\hline Ours w. ML & 54.5 & \underline{66.0} & 31.7 & \underline{62.9}\\
+\begin{tabular}{|c||c|c|c|}
+\hline  \% & Trajectory & STIP & Both \\
+\hline \cite{CRIM13} w/o. context & 52.3 & 29.3 & 53.1\\
+\hline \cite{CRIM13} w. context & 58.3 & \underline{43.0} & 61.2\\
+\hline Ours w/o. ML & 49.4 & 18.8 & 50.9 \\
+\hline Ours w. ML & \underline{66.0} & 31.7 & \underline{62.9}\\
 \hline 
 \end{tabular}
 }
 \label{CRIMAccu}
+\vspace{-5pt}
 \end{table}
 
 Additional analysis, including different approaches to encoding trajectory information and detection accuracy as a function of interaction length can be found in the supplemental material.

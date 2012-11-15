@@ -19,7 +19,7 @@
 \newcommand{\todd}[1]{\textcolor{red}{[\bf TZ: #1]}}
 \newcommand{\ruonan}[1]{\textcolor{blue}{[\bf RL: #1]}}
 
-%\cvprfinalcopy % *** Uncomment this line for the final submission
+\cvprfinalcopy % *** Uncomment this line for the final submission
 
 \def\cvprPaperID{1332} % *** Enter the CVPR Paper ID here
 \def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
@@ -30,7 +30,7 @@
 \begin{document}
 
 %%%%%%%%% TITLE
-\title{Supplemental Material Accompanying Paper 1332,\\ ``Finding Group Interactions in Social Clutter''}
+\title{Supplemental Material Accompanying Paper 1332\\ ``Finding Group Interactions in Social Clutter''}
 %\author{ Ruonan Li and Todd Zickler\\
 %Harvard School of Engineering and Applied Science\\
 %{\tt\small \{ruonanli,zickler\}@seas.harvard.edu}
@@ -43,7 +43,7 @@
 \section{Details of Branch-and-Bound Localization}
 \label{detailBB}
 
-To apply branch-and-bound algorithm to minimize (\ref{quality}), we first specify the spaces where $T_{s}$ and $T_{e}$ may take a value. We denote the length of the shortest exemplar activity as $T_{min}$, then we assume $1\leq T_{s}\leq T-T_{min}+1$ and $T_{min}+1\leq T_{e}\leq T$. Additional constraint may be imposed, such as $T_{min}\leq T_{e}-T_{s}$. Given these information,  the temporal branch-and-bound algorithm, as a companion to the 2-D case studied in \cite{Lampert}, can be derived as in Algorithm \ref{Algo:2}.  In this algorithm, $\hat{f}(T_{s,low}, T_{s,upp}, T_{e,low}, T_{e,upp})$ is a lower bound of the values of the quality function evaluated on all intervals enclosed in $[T_{s,low}, T_{s,upp}]\times [T_{e,low}, T_{e,upp}]$. To calculate this lower bound, we define
+To apply branch-and-bound algorithm to minimize the quality function (7), we first specify the spaces where $T_{s}$ and $T_{e}$ may take a value. We denote the length of the shortest exemplar activity as $T_{min}$, then we assume $1\leq T_{s}\leq T-T_{min}+1$ and $T_{min}+1\leq T_{e}\leq T$. Additional constraint may be imposed, such as $T_{min}\leq T_{e}-T_{s}$. Given these information,  the temporal branch-and-bound algorithm, as a companion to the 2-D case studied in \cite{Lampert}, can be derived as in Algorithm \ref{Algo:2}.  In this algorithm, $\hat{f}(T_{s,low}, T_{s,upp}, T_{e,low}, T_{e,upp})$ is a lower bound of the values of the quality function evaluated on all intervals enclosed in $[T_{s,low}, T_{s,upp}]\times [T_{e,low}, T_{e,upp}]$. To calculate this lower bound, we define
 \begin{equation}
 \begin{split}
 &\hat{f}(T_{s,low}, T_{s,upp}, T_{e,low}, T_{e,upp})\\
@@ -60,7 +60,7 @@ which only needs to be computed once. Then the lower bound for the cell $\mathca
 \end{equation}
 
 
-\begin{algorithm*}[h]
+\begin{algorithm*}[t]
 \begin{enumerate}
 \footnotesize{
 \item Initialize: Let $T_{s,low}=1$, $T_{s,upp}=T-T_{min}+1$, $T_{e,low}=T_{min}+1$, and $T_{e,upp}=T$; Initialize priority queue $Q$ as empty; 
@@ -92,7 +92,7 @@ Until $T_{s,low}=T_{s,upp}, T_{e,low}=T_{e,upp}$.
 
 \section{Details for Classroom Interaction Dataset}
 
-The raw video framerate is 15fps.
+The raw video frame rate is 15fps.
 
 We have applied an OpenCV face detector and generated long tracks of the bounding boxes using a combination of OpenCV mean-shift tracking and dominant optical flows. We manually eliminate the false-alarm boxes/tracks and recover (very few) miss-detections when using the video for building ground-truth exemplars, and do not involve manual correction when testing our approach. 
 
@@ -109,19 +109,19 @@ In consultation with education experts we define interaction categories based on
 
 \subsection{Descriptors}
 
-We use a coarse representation of the head pose as the individual descriptor. Specifically, we compute the Histogram of Oriented Gradient (HOG) feature within each temporal unit and each box, and apply nine one-against-all SVMs to estimate the likelihood of a HOG feature belonging to nine head poses (front, left, lower-left, lower-front, lower-right, right, back-right, and back-left). The nine-dimensional likelihood vector  serves as our individual descriptor. Meanwhile, we derive the pairwise descriptor for three or more individuals based on the geometrical configurations of the bounding boxes. As shown in the left panel of Figure \ref{all_illu}(b), where a descriptor of target $m$ relative to target $m'$ among five targets at time $t$ is computed, we compute the distances $r_{i}$'s between all others and $m$, and the relative angles $a_{i}$'s between the connecting vectors and $\overrightarrow{mm'}$, and combine all these geometric quantities into a pairwise descriptor $\mathbf{g}_{m,m',t}$. When computing $\mathbf{g}_{n,n',s}$ in the input (right panel of Figure \ref{all_illu}(b)), we align $\overrightarrow{nn'}$ against $\overrightarrow{mm'}$ and predict the locations of the three individuals (shown in red), and compute the true distances $z_{i}$'s and relative angles $b_{i}$'s by locating the nearest individuals to the predicted locations. This pairwise representation achieves invariance under similarity transforms. For two-person interaction, we simply use the distance and the relative angles against the right horizontal axis (Figure \ref{all_illu}(c)). 
+We use a coarse representation of the head pose as the individual descriptor. Specifically, we compute the Histogram of Oriented Gradient (HOG) feature within each temporal unit and each box, and apply nine one-against-all SVMs to estimate the likelihood of a HOG feature belonging to nine head poses (front, left, lower-left, lower-front, lower-right, right, back-right, and back-left). The nine-dimensional likelihood vector  serves as our individual descriptor. Meanwhile, we derive the pairwise descriptor for three or more individuals based on the geometrical configurations of the bounding boxes. As shown in the left panel of Fig. \ref{context_classroom}(a), where a descriptor of target $m$ relative to target $m'$ among five targets at time $t$ is computed, we compute the distances $r_{i}$'s between all others and $m$, and the relative angles $a_{i}$'s between the connecting vectors and $\overrightarrow{mm'}$, and combine all these geometric quantities into a pairwise descriptor $\mathbf{g}_{m,m',t}$. When computing $\mathbf{g}_{n,n',s}$ in the input (right panel of Figure \ref{context_classroom}(a)), we align $\overrightarrow{nn'}$ against $\overrightarrow{mm'}$ and predict the locations of the three individuals (shown in red), and compute the true distances $z_{i}$'s and relative angles $b_{i}$'s by locating the nearest individuals to the predicted locations. This pairwise representation achieves invariance under similarity transforms. For two-person interaction, we simply use the distance and the relative angles against the right horizontal axis (Fig. \ref{context_classroom}(b)). 
 
 \begin{figure}[t]
 \begin{center}
-\includegraphics[scale=1.2]{all_illu.png}
+\includegraphics[scale=0.4]{context_classroom.png}
 \end{center}
-\caption{For the classroom dataset, pairwise descriptors for groups comprised of (a) three or more participants, and (b) two participants. See text for details. \todd{Remove the left part of this figure}}
-\label{fig:classroom-pairwise}
+\caption{For the classroom dataset, pairwise descriptors for groups comprised of (a) three or more participants, and (b) two participants. See text for details. }
+\label{context_classroom}
 \end{figure}
 
 \subsection{Computational cost}
 
-We first look into the computational cost. We replace the optimal matching method with an exhaustive enumeration of all possible matchings. We also apply temporal sliding windows at eight scales ranging from half to twice of the exemplar length, stopping using the remaining scales whenever the current window achieves the same quality function value as the branch-and-bound. We show the average computation time for one match between an exemplar and an input on a 8-core 2.8GHz Macintosh in Table \ref{computecost} (supplementary material), where we see clear savings for the proposed approach.
+We first look into the computational cost. We replace the optimal matching method with an exhaustive enumeration of all possible matchings. We also apply temporal sliding windows at eight scales ranging from half to twice of the exemplar length, stopping using the remaining scales whenever the current window achieves the same quality function value as the branch-and-bound. We show the average computation time for one match between an exemplar and an input on a 8-core 2.8GHz Macintosh in Table \ref{computecost}, where we see clear savings for the proposed approach.
 
 
 \begin{table}[h]
@@ -140,19 +140,19 @@ We first look into the computational cost. We replace the optimal matching metho
 \end{table}
 
 \subsection{Temporal localization}
-We finally investigate the temporal localization performance, for which we compute the ratio of the intersection to the union of the estimated interval and the annotated interval, and show the averages in Figure \ref{classtemporal}(b).  Again, metric learning improves the capability of finding temporal boundaries.
+We investigate the temporal localization performance, for which we compute the ratio of the intersection to the union of the estimated interval and the annotated interval, and show the averages in Figure \ref{temporal_bar}.  Again, metric learning improves the capability of finding temporal boundaries.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \begin{center}
-\includegraphics[scale=2.5]{classtemporal.png}
+\includegraphics[scale=2.5]{temporal_bar.png}
 \end{center}
 \caption{Average classification accuracies and false positives for two-person and three-person interactions (Individual and/or pairwise descriptors, with or without metric learning (ML)) and the temporal localization accuracies.}
-\label{classtemporal}
-\end{figure*}
+\label{temporal_bar}
+\end{figure}
 
 \subsection{More examples}
 
-\todd{If you reduce the number of results included in the main paper, you could include some more here.}
+\todd{Add ROC here. Full example is already here}
 
 \begin{figure*}
 \begin{center}
@@ -170,7 +170,7 @@ We finally investigate the temporal localization performance, for which we compu
 A 32-dimensional histogram of the spatio-temporal features developed by \cite{Dollar:STIP} in each unit and each bounding box is calculated first against a 500-word vocabulary from K-means clustering and then by PCA, and serves as the individual activity descriptor. Another 32-dimensional histogram of the optical flow computed from OpenCV in each unit and each box is calculated against 8 directions and 4 magnitudes, and the difference between the two histograms (relative motion) serves as the pairwise descriptor between the two humans. In testing, we employ the human detector \cite{Pedro:detect}, and associate the detected boxes across frames to form continuous tracks of humans. 
 
 \subsection{Additional experiments}
-We again explore the effectiveness of combining both individual descriptor and pairwise descriptor, as well as metric learning for group dissimilarity function. We implement our approach with either but not both descriptor, and without learning the dissimilarity. The performance comparison is show in Table ~\ref{UTaccuFPdegrade}. It is interesting to see the pairwise descriptor plays a more crucial role for this dataset: A significant performance drop arises when we only consider individual action descriptors. 
+We again explore the effectiveness of combining both individual descriptor and pairwise descriptor, as well as metric learning for group dissimilarity function. We implement our approach with either but not both descriptor, and without learning the dissimilarity. The performance comparison is show in Table~\ref{UTaccuFPdegrade}. It is interesting to see the pairwise descriptor plays a more crucial role for this dataset: A significant performance drop arises when we only consider individual action descriptors. 
 
 \begin{table}[h]
 \centering \caption{Classification accuracies and false positive (FP) rates comparison on UT-Interaction dataset for evaluating the effectiveness of different components of the proposed approach: Individual and/or pairwise descriptors, with or without metric learning (ML).}
@@ -198,6 +198,8 @@ into action intervals. For more details please refer to \cite{CRIM13}. Note that
 We exactly follow the training/testing partitions provided by the dataset. We extract the spatio-temporal interest points (STIP) based appearance features and compute trajectory-based features from the tracks provided with the dataset as \cite{CRIM13} does (See \cite{CRIM13} for details). Differently from \cite{CRIM13}, we only compute STIP based features inside the bounding boxes enclosing the mice. The trajectory-based features consists of those describing the motion of each individual mouse and those describing the relative motion between two mice. We denote the former as T\_ind and the latter as T\_pair. Again we use a 4-level temporal pyramid, in which the STIP based appearance features are computed as \cite{CRIM13} does and the trajectory based features are also transformed into histograms against 64 codewords. 
 
 \subsection{Additional analysis}
+
+\todd{need rewrite}
 Three combinations of features were attempted in \cite{CRIM13}: Trajectory only, STIP only, and using both. For the case trajectory only, our approach has two possible working modes: Using all trajectory-based features as individual descriptors (denoted as Trajectory\_1), or using T\_ind as individual descriptors and using T\_pair as pairwise descriptors (denoted as Trajectory\_2). In the case of STIP only, all features are used as individual descriptors, and in the case of using both, STIP features and trajectory-based features serve as individual descriptor and pairwise descriptors respectively. To classify a segment responded by one or more exemplars, we simply give it the label of the top-ranked exemplar. We follow the same error metric as \cite{CRIM13}, the frame-wise accuracy, and report the results in Table \ref{CRIMAccu}, where it is evident that motion trajectory is much more discriminative than local STIP based features given little articulation in a constrained environment. The competing performance by approach is achieved by splitting the motion into individual ones and pairwise ones and learning separate metrics for them (Trajectory\_2). In other cases, multi-level adaboost based approach exhibits superiority on frame-wise classifications (as in \cite{CRIM13}).
 
 
