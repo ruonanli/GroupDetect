@@ -163,8 +163,14 @@ We finally investigate the temporal localization performance, for which we compu
 \label{retrieved}
 \end{figure*}
 
-\subsubsection{UT-Interaction Dataset}
+\section{UT-Interaction Dataset}
 
+\subsection{Descriptors}
+
+A 32-dimensional histogram of the spatio-temporal features developed by \cite{Dollar:STIP} in each unit and each bounding box is calculated first against a 500-word vocabulary from K-means clustering and then by PCA, and serves as the individual activity descriptor. Another 32-dimensional histogram of the optical flow computed from OpenCV in each unit and each box is calculated against 8 directions and 4 magnitudes, and the difference between the two histograms (relative motion) serves as the pairwise descriptor between the two humans. In testing, we employ the human detector \cite{Pedro:detect}, and associate the detected boxes across frames to form continuous tracks of humans. 
+
+\subsection{Additional experiments}
+We again explore the effectiveness of combining both individual descriptor and pairwise descriptor, as well as metric learning for group dissimilarity function. We implement our approach with either but not both descriptor, and without learning the dissimilarity. The performance comparison is show in Table ~\ref{UTaccuFPdegrade}. It is interesting to see the pairwise descriptor plays a more crucial role for this dataset: A significant performance drop arises when we only consider individual action descriptors. 
 
 \begin{table}[h]
 \centering \caption{Classification accuracies and false positive (FP) rates comparison on UT-Interaction dataset for evaluating the effectiveness of different components of the proposed approach: Individual and/or pairwise descriptors, with or without metric learning (ML).}
@@ -182,13 +188,16 @@ We finally investigate the temporal localization performance, for which we compu
 \end{table}
 
 
-\subsubsection{Caltech Resident-Intruder Mouse Dataset.} 
+\section{Caltech Resident-Intruder Mouse Dataset.} 
 
 We also tested the approach on Caltech Resident-Intruder Mouse Dataset \cite{CRIM13}, which contains long video sequences recording pair-wise interactions between two mice. Behaviors are categorized into 12 different mutually exclusive action types, plus an `other' category indicating no behavior of interest is occurring. A video typically lasts around 10 minutes at 25fps with a resolution of 640x480 pixels. Every video frame is labeled with one of the thirteen ground-truth categories, resulting in a segmentation of the videos
 into action intervals. For more details please refer to \cite{CRIM13}. Note that in all videos are pair-wise interactions, and our experiment on this dataset is not meant to distinguish the participants, but to demonstrate that our approach can be directly used for a traditional task of temporal segmentation and classification without any changes.
 
+\subsection{Descriptors}
+
 We exactly follow the training/testing partitions provided by the dataset. We extract the spatio-temporal interest points (STIP) based appearance features and compute trajectory-based features from the tracks provided with the dataset as \cite{CRIM13} does (See \cite{CRIM13} for details). Differently from \cite{CRIM13}, we only compute STIP based features inside the bounding boxes enclosing the mice. The trajectory-based features consists of those describing the motion of each individual mouse and those describing the relative motion between two mice. We denote the former as T\_ind and the latter as T\_pair. Again we use a 4-level temporal pyramid, in which the STIP based appearance features are computed as \cite{CRIM13} does and the trajectory based features are also transformed into histograms against 64 codewords. 
 
+\subsection{Additional analysis}
 Three combinations of features were attempted in \cite{CRIM13}: Trajectory only, STIP only, and using both. For the case trajectory only, our approach has two possible working modes: Using all trajectory-based features as individual descriptors (denoted as Trajectory\_1), or using T\_ind as individual descriptors and using T\_pair as pairwise descriptors (denoted as Trajectory\_2). In the case of STIP only, all features are used as individual descriptors, and in the case of using both, STIP features and trajectory-based features serve as individual descriptor and pairwise descriptors respectively. To classify a segment responded by one or more exemplars, we simply give it the label of the top-ranked exemplar. We follow the same error metric as \cite{CRIM13}, the frame-wise accuracy, and report the results in Table \ref{CRIMAccu}, where it is evident that motion trajectory is much more discriminative than local STIP based features given little articulation in a constrained environment. The competing performance by approach is achieved by splitting the motion into individual ones and pairwise ones and learning separate metrics for them (Trajectory\_2). In other cases, multi-level adaboost based approach exhibits superiority on frame-wise classifications (as in \cite{CRIM13}).
 
 

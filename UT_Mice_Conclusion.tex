@@ -1,4 +1,8 @@
-\noindent\textbf{UT-Interaction Dataset.} To compare with the state-of-art, we implement our approach on UT-Interaction dataset initially used in \cite{Ryoo:group} (where the reader can find the description about the dataset) and recently again in \cite{Amer:group}. We follow exactly the same setup as in \cite{Ryoo:group,Amer:group}: 20\% of all available manual segmentations, each occupied by a unique activity instance, are used as `database exemplars' for training. The remaining full (unsegmented) sequences are used for testing. In training, a 4-level pyramid is set up at each ground-truth time interval, and a temporal unit is set at half length of the bottom-level cell. A 32-dimensional histogram of the spatio-temporal features developed by \cite{Dollar:STIP} in each unit and each bounding box is calculated first against a 500-word vocabulary from K-means clustering and then by PCA, and serves as the individual activity descriptor. Another 32-dimensional histogram of the optical flow computed from OpenCV in each unit and each box is calculated against 8 directions and 4 magnitudes, and the difference between the two histograms (relative motion) serves as the pairwise descriptor between the two humans. In testing, we employ the human detector \cite{Pedro:detect}, and associate the detected boxes across frames to form continuous tracks of humans. 
+% !TEX root =  GroupDet.tex
+
+\todd{Add to the beginning of Section 4, ``In all cases we use four-level temporal pyramids for the interactions, and we set the time unit to be half the duration of the cells in the lowest level.'' Then remove these words from elsewhere in the section.} 
+
+\vspace{0.05in}\noindent\noindent\textbf{UT-Interaction Dataset.} For comparison to the state-of-art, we evaluate our approach on the UT-Interaction dataset~\cite{Ryoo:group}. We follow the protocol defined in previous work~\cite{Ryoo:group,Amer:group}: 20\% of available interaction annotations are used as exemplars for training, and the remaining (non-annotated) sequences are used for testing. We again use a 4-level temporal pyramid and set a temporal unit to half length of the bottom-level cell. For individual descriptors we use 32-dimensional histogram of space-time features~\cite{Dollar:STIP}, and for pairwise descriptors we use 32-dimensional differences of optical flow histograms to encode relative motion (more details in supplemental material). To obtain agent tracks in input sequences we use a per-frame detector~\cite{Pedro:detect} with a simple between-frame association rule.
 
 \begin{table}[ht]
 \centering \caption{Classification accuracies and false positive (FP) rates for the proposed method and the baselines on UT-Interaction dataset.}
@@ -18,11 +22,10 @@
 \label{UTaccuFP}
 \end{table}
 
-
-The first interesting investigation is again about the effectiveness of combining both individual descriptor and pairwise descriptor, as well as metric learning for group dissimilarity function. We implement our approach with either but not both descriptor, and without learning the dissimilarity. The performance comparison is show in Table ~\ref{UTaccuFPdegrade} (supplementary material). It is interesting to see the pairwise descriptor plays a more crucial role for this dataset: A significant performance drop arises when we only consider individual action descriptors. The next comparison is against the state-of-art methods \cite{Ryoo:group,Amer:group}. The recognition accuracies and false-alarm rates are shown in Table ~\ref{UTaccuFP}. In this evaluation, we only allow one database exemplar to produce a single response in an input, and claim a true positive only when both the class-label and the identified participants are simultaneously correct, otherwise a false positive is claimed for the exemplar class. We achieve improved accuracy and competitive false positive rate against the baselines. In the third evaluation, we specifically look into the temporal localization and participant identification performance. For temporal localization, we follow exactly the same criterion as in \cite{Amer:group}, requiring a true-positive to achieve both correct classification and a $>50\%$ ratio of the intersection to the union of the estimated interval and ground-truth. we achieve a slightly smaller area under ROC curve than the two baselines, as shown in Table ~\ref{UTarea}. Note that the temporal boundary is essentially ambiguous for these consecutively executed activities. For participant identification, we enforce a stricter criterion to require $100\%$ correct identification (in contrast to $50\%$ in \cite{Amer:group}) for a true positive, and we outperform \cite{Amer:group}. 
+Table~\ref{UTaccuFP} compares recognition accuracy and false-alarm rates to those of previous work~\cite{Ryoo:group,Amer:group}. For our system, we consider one database exemplar at a time, compute its maximal response over the input video, and claim a true positive only when both the class-label and the identified participants are simultaneously correct. Otherwise a false positive is indicated for that exemplar class. By these measures, our approach provides improved accuracy and competitive false positive rates. Next we study detection in terms both temporal localization and participant identification. For temporal localization, we follow the protocol of~\cite{Amer:group} by indicating a true-positive when there is correct classification and more than a $50\%$ ratio between the intersection and union of the estimated temporal interval and the ground-truth. We achieve a slightly smaller area under ROC curve than the two baselines, as shown in Table ~\ref{UTarea}, but point out that differences are hard to interpret because the temporal boundaries are somewhat ambiguous for the consecutively-executed interactions in the dataset. To assess participant identification, we enforce a stricter true-positive criterion that requires $100\%$ correct identification instead of the $50\%$ value used in~\cite{Amer:group} and our system still outperforms the method of \cite{Amer:group}. We attribute this to the relative flexibility of our represention. \todd{Write one or two sentences here. Something about the fact that their interactions can't easily accommodate changes ``shape'' over space and time.}
 
 \begin{table}[ht]
-\centering \caption{Area under ROC curve for the proposed method and the baselines on UT-Interaction dataset.}
+\centering \caption{Area under ROC curve for the proposed method and the baselines on UT-Interaction dataset. \todd{If you are stuck for space, you could move this figure, along with the accompanying text above, to the supplemental material.}}
 \footnotesize{
 \begin{tabular}{|c|c|c|c|}
 \hline   & \cite{Ryoo:group} &  \cite{Amer:group}  &   ours \\
@@ -34,10 +37,28 @@ The first interesting investigation is again about the effectiveness of combinin
 \label{UTarea}
 \end{table}
 
-\vspace{0.05in}
+Additional results that measure the effect of turning off different parts of our system can be found in the supplemental material.
 
-\noindent\textbf{Caltech Resident-Intruder Mouse Dataset.} We also tested the approach on Caltech Resident-Intruder Mouse Dataset \cite{CRIM13}, to demonstrate that our approach can be directly used for a traditional task of temporal segmentation and classification without any changes. The detailed experimental setting and results are presented in the supplementary material.
+\vspace{0.05in} \noindent\textbf{Caltech Resident-Intruder Mouse Dataset.} As an application to agents other than humans, we also evaluate our approach in the mouse dataset of~\cite{CRIM13}. This dataset consists of long videos of interactions between pairs of mice, and since there are no by-standers in this scenario (\ie $M=N$) we assess detection, recognition and temporal localization performance only. We use the training and testing splits defined in~\cite{CRIM13}, and we use their suggested individual and pairwise descriptors: spatio-temporal interest points (STIP) that encode agent appearance,\footnote{Different from \cite{CRIM13}, we only compute STIP-based features inside the bounding boxes that enclose the mice.} and trajectory-based features (position, velocities, etc.)for individual agents, and relative trajectory features for pairwise descriptors. (See supplemental material for details.)
 
+To classify an temporal interval in a test video that is successfully matched to one or more exemplars, we simply read the label of the top-scoring exemplar. Table \ref{CRIMAccu} shows the results using the error metric (frame-wise accuracy) defined in \cite{CRIM13}. As done in the original work, we separately measure performance using trajectories features only, STIP features only, and both. It is clear that motion trajectory information is much more important than local STIP-based features, which is not surprising given the limited articulation of the agents.
+
+\begin{table}[h]
+\centering \caption{Accuracies for the proposed method and the baselines on Caltech Resident-Intruder Mouse Dataset. (\%) \todd{Only show the Trajectory\_2 results in this table, and do not include the discussion about different ways to use trajectory features. Instead put this bigger table in the supplemental material along with that discussion.}}
+\footnotesize{
+\begin{tabular}{|c||c|c|c|c|}
+\hline   & Trajectory\_1  & Trajectory\_2 & STIP & Both \\
+\hline \cite{CRIM13} w/o. context & 52.3  & 52.3 & 29.3 & 53.1\\
+\hline \cite{CRIM13} w. context &  \underline{58.3} & 58.3 & \underline{43.0} & 61.2\\
+\hline Ours w/o. ML &  45.6 & 49.4 & 18.8 & 50.9 \\
+\hline Ours w. ML & 54.5 & \underline{66.0} & 31.7 & \underline{62.9}\\
+\hline 
+\end{tabular}
+}
+\label{CRIMAccu}
+\end{table}
+
+Additional analysis, including different approaches to encoding trajectory information and detection accuracy as a function of interaction length can be found in the supplemental material.
 
 \vspace{0.05in}
 
